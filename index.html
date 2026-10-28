@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>錢包復健中</title>
+<style>
+:root{--bg:#eef1ee;--card:#fbfcfb;--ink:#16241f;--mute:#62756d;--line:#d6dfda;--acc:#166b57;--accbg:#d5ebe2;--warn:#a16207;--bad:#b42318;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1715;--card:#17211e;--ink:#e4efe9;--mute:#8aa098;--line:#263530;--acc:#6fd3b4;--accbg:#1b3b32;--warn:#e5b24a;--bad:#f28b82;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1715;--card:#17211e;--ink:#e4efe9;--mute:#8aa098;--line:#263530;--acc:#6fd3b4;--accbg:#1b3b32;--warn:#e5b24a;--bad:#f28b82;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;font-variant-numeric:tabular-nums;padding-bottom:84px}
+main{max-width:560px;margin:0 auto;padding:18px 16px}
+h1{font-size:22px;margin:4px 0 2px;letter-spacing:.02em}
+h2{font-size:16px;margin:22px 0 8px}
+.sub{color:var(--mute);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.hero{padding:18px 16px 10px;border-radius:22px;background:var(--accbg);border-color:transparent}
+.big{font-size:40px;font-weight:700;line-height:1.1;color:var(--acc)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid .card{margin:0}
+.k{font-size:12px;color:var(--mute)}
+.v{font-size:20px;font-weight:650}
+.row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row .g{flex:1;min-width:0}
+.row .amt{font-weight:650;white-space:nowrap}
+.tag{font-size:11px;padding:1px 8px;border-radius:999px;background:var(--accbg);color:var(--acc)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:8px 0}
+.bar i{display:block;height:100%;background:var(--acc)}
+button,input,select{font:inherit;color:inherit}
+button{border:1px solid var(--acc);background:transparent;color:var(--acc);border-radius:9px;padding:5px 12px;cursor:pointer}
+button.p{background:var(--acc);color:var(--card)}
+button.d{border-color:var(--bad);color:var(--bad)}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+label.f{display:block;font-size:12px;color:var(--mute);margin:8px 0 3px}
+summary{cursor:pointer;color:var(--acc);padding:6px 0}
+.ok{color:var(--acc)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.off{opacity:.5}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+.chips span{padding:3px 10px;border-radius:999px;background:var(--accbg);font-size:13px}
+.cells{display:grid;grid-template-columns:repeat(var(--c),1fr);gap:4px;margin:12px 0}.c{aspect-ratio:1;border-radius:5px;background:var(--line);cursor:pointer}.c.p{background:var(--acc)}.c.n{box-shadow:0 0 0 2px var(--warn) inset;animation:pl 1.6s ease-in-out infinite}@keyframes pl{50%{opacity:.35}}@media(prefers-reduced-motion:reduce){.c.n{animation:none}}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;border-radius:0;padding:12px 0;color:var(--mute);background:none}
+nav button.on{color:var(--acc);font-weight:700;box-shadow:inset 0 2px 0 var(--acc)}
+.chk{width:20px;height:20px;flex:none;accent-color:var(--acc)}
+textarea{height:120px;font-size:12px}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<nav id="nav"></nav>
+<script>
+const P=(n,k)=>Array.from({length:n},(_,i)=>i<k);
+const SEED={income:0,loans:[],exps:[]};
+const K='wallet-rehab-v1';
+let S=null;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
+if(!S||!S.loans)S=JSON.parse(JSON.stringify(SEED));
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const U=Date.UTC,now=new Date(),T=U(now.getFullYear(),now.getMonth(),now.getDate());
+const D=s=>{const[y,m,d]=s.split('-').map(Number);return U(y,m-1,d)};
+const fd=ms=>{const d=new Date(ms);return d.getUTCFullYear()+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+'/'+String(d.getUTCDate()).padStart(2,'0')};
+const ym=ms=>fd(ms).slice(0,7),$m=n=>'$'+Math.round(n).toLocaleString('en-US');
+const dl=ms=>Math.round((ms-T)/864e5);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function info(L){
+ let bal=L.principal,prev=D(L.start),rows=[];const[fy,fm]=L.first.split('-').map(Number);
+ for(let i=0;i<L.n;i++){
+  const due=L.day?U(fy,fm-1+i,L.day):U(fy,fm+i,0),days=(due-prev)/864e5;
+  const int=Math.round(bal*L.rate/100*days/365),pay=i==L.n-1?bal+int:L.pay,prin=pay-int;
+  rows.push({due,pay,int,prin,end:bal-prin});bal-=prin;prev=due;
+ }
+ const k=L.paid.filter(Boolean).length,unpaid=rows.filter((r,i)=>!L.paid[i]);
+ return{rows,k,remain:k?rows[k-1].end:L.principal,unpaid,next:L.paid.findIndex(x=>!x),remInt:unpaid.reduce((s,r)=>s+r.int,0),last:rows[rows.length-1].due,mo:L.pay+L.fee};
+}
+const live=e=>!e.end||D(e.end)>=T;
+let tab=['overview','debts','expenses','settings'].includes(location.hash.slice(1))?location.hash.slice(1):'overview';
+let ed=null,ld=null,lerr='',open=new Set(),sure=false,msg='';
+const TABS={overview:'總覽',debts:'債務',expenses:'固定支出',settings:'設定'};
+function go(t){tab=t;ed=null;ld=null;location.hash=t;render();scrollTo(0,0)}
+function tog(id,i){const L=S.loans.find(l=>l.id==id);L.paid[i]=!L.paid[i];save();render()}
+function chart(I,M){
+ const pts=[];for(let m=0;m<=M;m++)pts.push(S.loans.reduce((s,L,j)=>{const k=Math.min(I[j].k+m,L.n);return s+(k?I[j].rows[k-1].end:L.principal)},0));
+ const W=320,H=84,mx=pts[0]||1,xy=pts.map((v,i)=>((i/Math.max(M,1))*W).toFixed(1)+','+(6+(1-v/mx)*(H-12)).toFixed(1));
+ const end=Math.max(...I.map(i=>i.last));
+ const dots=S.loans.map((L,j)=>{const m=I[j].unpaid.length;if(!m||!M)return '';const[x,y]=xy[m].split(',');return `<circle cx="${x}" cy="${y}" r="4" style="fill:var(--card);stroke:var(--acc);stroke-width:2"/><text x="${Math.min(Math.max(+x,40),280)}" y="${+y-9}" font-size="10" text-anchor="middle" style="fill:var(--ink)">${L.name.slice(0,2)} ${ym(I[j].last).slice(2)}</text>`}).join('')+`<circle cx="0" cy="${xy[0].split(',')[1]}" r="5" style="fill:var(--acc)"/>`;
+ return `<svg viewBox="0 0 320 104" width="100%" role="img" aria-label="剩餘本金下降趨勢"><path d="M${xy.join('L')}L${W},${H}L0,${H}Z" style="fill:var(--card);opacity:.55"/><path d="M${xy.join('L')}" style="fill:none;stroke:var(--acc);stroke-width:2.5"/>${dots}<line x1="0" x2="320" y1="${H}" y2="${H}" style="stroke:var(--acc);opacity:.4"/><text x="0" y="100" font-size="11" style="fill:var(--mute)">今天 ${$m(mx)}</text><text x="320" y="100" font-size="11" text-anchor="end" style="fill:var(--mute)">${ym(end)} 歸零</text></svg>`;
+}
+function vOverview(){
+ if(!S.loans.length)return `<h1>錢包復健中</h1><div class="card hero" style="margin-top:12px"><div class="k">歡迎</div><div class="big" style="font-size:26px">先新增你的第一筆債務</div><div class="sub" style="margin:8px 0 12px">信貸、卡債分期、車貸、房貸都可以。資料只存在你自己的手機裡，不會上傳。</div><button class="p" onclick="go('debts');ld='new';render()">新增債務</button></div><div class="sub">也可以先到「固定支出」輸入每月固定的花費。</div>`;
+ const I=S.loans.map(info),remain=I.reduce((s,i)=>s+i.remain,0),remInt=I.reduce((s,i)=>s+i.remInt,0);
+ const M=Math.max(...I.map(i=>i.unpaid.length)),end=Math.max(...I.map(i=>i.last)),tot=monthly();
+ const due=S.loans.map((L,j)=>({L,i:I[j]})).filter(x=>x.i.next>=0).sort((a,b)=>a.i.rows[a.i.next].due-b.i.rows[b.i.next].due);
+ return `<h1>錢包復健中</h1><div class="sub">${fd(T)} 的狀況</div>
+ <div class="card hero" style="margin-top:12px"><div class="k">距離債務歸零還有</div><div class="big">${remain?M:0}<span style="font-size:18px;font-weight:500"> 個月</span></div>
+ <div class="sub" style="margin-bottom:6px">${remain?`預計 ${ym(end)} 歸零，剩餘本金 ${$m(remain)}`:'已全部還清 🎉'}</div>${chart(I,M)}</div>
+ <div class="grid"><div class="card"><div class="k">現行每月固定支出</div><div class="v">${$m(tot)}</div></div>
+ <div class="card"><div class="k">還清前還要付的利息</div><div class="v">${$m(remInt)}</div></div></div>
+ <div class="card" style="margin-top:10px"><label class="f" style="margin-top:0">每月收入（只存在你的手機）</label>
+ <input type="number" inputmode="numeric" placeholder="輸入後會算出可自由運用金額" value="${S.income||''}" onchange="S.income=+this.value||0;save();render()">
+ ${S.income?`<div style="margin-top:8px" class="${S.income-tot<0?'bad':'ok'}">每月可自由運用 <b>${$m(S.income-tot)}</b></div>`:''}</div>
+ <h2>下一期要繳</h2><div class="card">${due.length?due.map(({L,i})=>{const r=i.rows[i.next],d=dl(r.due);return `<div class="row"><div class="g"><b>${esc(L.name)}</b> 第 ${i.next+1} 期<div class="sub ${d<0?'bad':d<=7?'warn':''}">${fd(r.due)}，${d<0?'逾期 '+(-d)+' 天':d==0?'今天到期':d+' 天後'}</div></div><div class="amt">${$m(r.pay+L.fee)}</div><button onclick="tog('${L.id}',${i.next})">已繳</button></div>`}).join(''):'<div class="sub">目前沒有待繳款項</div>'}</div>
+ <h2>各筆債務還清後，每月少付多少</h2><div class="card">${due.map(x=>x).sort((a,b)=>a.i.last-b.i.last).map(({L,i})=>`<div class="row"><div class="g">${esc(L.name)}<div class="sub">${ym(i.last)} 還清</div></div><div class="amt ok">每月少付 ${$m(i.mo)}</div></div>`).join('')||'<div class="sub">全部還清了</div>'}</div>`;
+}
+function vDebts(){
+ return `<h1>債務</h1><div class="sub">勾選代表已繳，剩餘本金會依利息重新計算</div><div style="height:12px"></div>`+loanForm()+S.loans.map(L=>{
+  const i=info(L),pct=Math.round((1-i.remain/L.principal)*100);
+  return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:17px">${esc(L.name)}</b><span class="tag">${esc(L.kind)}，年利率 ${L.rate}%</span></div>
+  <div class="cells" style="--c:${L.n%12?10:12}">${i.rows.map((r,x)=>`<i class="c ${L.paid[x]?'p':x==i.next?'n':''}" title="第 ${x+1} 期 ${fd(r.due)}" onclick="tog('${L.id}',${x})"></i>`).join('')}</div>
+  <div class="grid" style="gap:6px"><div><div class="k">已還本金</div><div class="v">${pct}%</div></div><div><div class="k">剩餘本金</div><div class="v">${$m(i.remain)}</div></div>
+  <div><div class="k">已繳／總期數</div><div>${i.k} ／ ${L.n}</div></div><div><div class="k">每期</div><div>${$m(i.mo)}</div></div>
+  <div><div class="k">剩餘利息</div><div>${$m(i.remInt)}</div></div><div><div class="k">最後一期</div><div>${fd(i.last)}</div></div></div>
+  <div style="margin:8px 0"><button onclick="ld='${L.id}';render();scrollTo(0,0)">編輯這筆債務</button></div><details ${open.has(L.id)?'open':''} ontoggle="this.open?open.add('${L.id}'):open.delete('${L.id}')"><summary>每期明細</summary>
+  ${i.rows.map((r,x)=>`<label class="row" style="font-size:13px"><input class="chk" type="checkbox" ${L.paid[x]?'checked':''} onchange="tog('${L.id}',${x})"><div class="g ${L.paid[x]?'off':''}">第 ${x+1} 期 ${fd(r.due)}<div class="sub">本金 ${$m(r.prin)}，利息 ${$m(r.int)}</div></div><div class="amt ${L.paid[x]?'off':''}">${$m(r.pay+L.fee)}</div></label>`).join('')}</details></div>`}).join('')+(ld?'':'<button class="p" onclick="ld=\'new\';render()">新增債務</button>');
+}
+function loanForm(){
+ if(!ld)return '';
+ const L=ld=='new'?null:S.loans.find(l=>l.id==ld),k=L?L.paid.filter(Boolean).length:0;
+ const f=(id,lab,val,t='number',ph='')=>`<label class="f">${lab}</label><input id="${id}" type="${t}" ${t=='number'?'inputmode="decimal" step="any"':''} placeholder="${ph}" value="${esc(val)}">`;
+ return `<div class="card"><b>${L?'編輯債務':'新增債務'}</b>
+ ${f('lname','名稱',L?L.name:'','text','例如：信貸、車貸')}
+ <label class="f">類型</label><select id="lkind">${['信貸','卡債分期','車貸','房貸','學貸','其他'].map(v=>`<option ${L&&L.kind==v?'selected':''}>${v}</option>`).join('')}</select>
+ ${f('lprin','貸款本金',L?L.principal:'')}${f('lrate','年利率 %（0 利率填 0）',L?L.rate:'')}${f('ln','總期數',L?L.n:'')}
+ ${f('lpay','每期還款（留空會自動試算）',L?L.pay:'')}${f('lfee','每期手續費（沒有就留空）',L&&L.fee?L.fee:'')}
+ ${f('ldate','第一期繳款日',L?L.first:'','date')}${f('lpaid','已繳幾期',k)}
+ <div class="sub bad" style="margin-top:6px">${lerr}</div>
+ <div style="display:flex;gap:8px;margin-top:12px"><button class="p" onclick="saveLoan()">儲存</button><button onclick="ld=null;lerr='';render()">取消</button>${L?'<button class="d" style="margin-left:auto" onclick="delLoan()">刪除</button>':''}</div></div>`;
+}
+function saveLoan(){
+ const v=id=>document.getElementById(id).value.trim(),n=Math.round(+v('ln')),pr=+v('lprin'),r=+v('lrate')||0,fs=v('ldate');
+ if(!(n>0)||!(pr>0)||!fs){lerr='請填寫貸款本金、總期數和第一期繳款日';render();return}
+ let pay=+v('lpay');if(!pay){const m=r/1200;pay=Math.round(m?pr*m/(1-Math.pow(1+m,-n)):pr/n)}
+ const[y,mo,d]=fs.split('-').map(Number),eom=d==new Date(U(y,mo,0)).getUTCDate(),st=eom?U(y,mo-1,0):U(y,mo-2,d);
+ const o={name:v('lname')||'未命名債務',kind:v('lkind'),principal:pr,rate:r,n,pay,fee:+v('lfee')||0,start:new Date(st).toISOString().slice(0,10),first:fs,day:eom?0:d,paid:P(n,Math.min(n,Math.max(0,+v('lpaid')||0)))};
+ if(ld=='new')S.loans.push({id:'l'+Date.now(),...o});else Object.assign(S.loans.find(l=>l.id==ld),o);
+ ld=null;lerr='';save();render();
+}
+function delLoan(){S.loans=S.loans.filter(l=>l.id!=ld);ld=null;save();render()}
+function monthly(){
+ return S.loans.reduce((s,L)=>s+(info(L).unpaid.length?L.pay+L.fee:0),0)+S.exps.filter(live).reduce((s,e)=>s+(+e.amt||0),0);
+}
+function vExpenses(){
+ const by={};S.loans.forEach(L=>{if(info(L).unpaid.length)by['轉帳']=(by['轉帳']||0)+L.pay+L.fee});
+ S.exps.filter(live).forEach(e=>by[e.via]=(by[e.via]||0)+(+e.amt||0));
+ const e=ed&&ed!='new'?S.exps.find(x=>x.id==ed):{name:'',note:'',via:'信用卡',amt:'',end:''};
+ const form=ed?`<div class="card"><b>${ed=='new'?'新增項目':'編輯項目'}</b>
+  <label class="f">名稱</label><input id="fn" value="${esc(e.name)}"><label class="f">備註</label><input id="fo" value="${esc(e.note)}">
+  <label class="f">付款方式</label><select id="fv">${['信用卡','現金','轉帳','超商繳款','其他'].map(v=>`<option ${v==e.via?'selected':''}>${v}</option>`).join('')}</select>
+  <label class="f">每月金額</label><input id="fa" type="number" inputmode="numeric" value="${e.amt}"><label class="f">結束日期（沒有就留空）</label><input id="fe" type="date" value="${e.end}">
+  <div style="display:flex;gap:8px;margin-top:12px"><button class="p" onclick="saveExp()">儲存</button><button onclick="ed=null;render()">取消</button>${ed!='new'?'<button class="d" onclick="delExp()" style="margin-left:auto">刪除</button>':''}</div></div>`:'';
+ return `<h1>每月固定支出</h1><div class="card hero" style="margin-top:12px"><div class="k">現行合計</div><div class="big">${$m(monthly())}</div>
+ <div class="chips">${Object.entries(by).map(([k,v])=>`<span>${k} ${$m(v)}</span>`).join('')}</div></div>${form}
+ <div class="card">${S.loans.filter(L=>info(L).unpaid.length).map(L=>`<div class="row"><div class="g">${esc(L.name)}<div class="sub">每月自動算入，到 ${ym(info(L).last)}</div></div><span class="tag">債務</span><div class="amt">${$m(L.pay+L.fee)}</div></div>`).join('')}
+ ${S.exps.map(x=>`<div class="row ${live(x)?'':'off'}" onclick="ed='${x.id}';render()" style="cursor:pointer"><div class="g">${esc(x.name)}<div class="sub">${esc(x.note)}${x.end?`，${live(x)?'到':'已於'} ${x.end.replace(/-/g,'/')}${live(x)?'':' 結束'}`:''}</div></div><span class="tag">${esc(x.via)}</span><div class="amt">${x.amt?$m(x.amt):'待補'}</div></div>`).join('')}</div>
+ <button class="p" onclick="ed='new';render()">新增項目</button>`;
+}
+function saveExp(){
+ const v=id=>document.getElementById(id).value.trim(),o={name:v('fn')||'未命名',note:v('fo'),via:v('fv'),amt:+v('fa')||0,end:v('fe')};
+ if(ed=='new')S.exps.push({id:'e'+Date.now(),...o});else Object.assign(S.exps.find(x=>x.id==ed),o);
+ ed=null;save();render();
+}
+function delExp(){S.exps=S.exps.filter(x=>x.id!=ed);ed=null;save();render()}
+function vSettings(){
+ return `<h1>設定</h1><div class="card"><b>備份與還原</b><div class="sub">資料只存在這支手機的瀏覽器裡。換手機或清除瀏覽資料前，先複製下面的文字存起來。</div>
+ <textarea id="bk" style="margin-top:8px">${esc(JSON.stringify(S))}</textarea>
+ <div style="display:flex;gap:8px;margin-top:8px"><button class="p" onclick="imp()">用上面的文字還原</button></div><div class="sub" style="margin-top:6px">${msg}</div></div>
+ <div class="card"><b>重設</b><div class="sub">清空所有資料，回到全新的狀態。</div><button class="d" style="margin-top:8px" onclick="rst()">${sure?'再按一次確認重設':'重設資料'}</button></div>`;
+}
+function imp(){try{const j=JSON.parse(document.getElementById('bk').value);if(!j.loans||!j.exps)throw 0;S=j;save();msg='已還原';}catch(e){msg='格式不正確，請貼上完整的備份文字'}render()}
+function rst(){if(!sure){sure=true;render();return}S=JSON.parse(JSON.stringify(SEED));sure=false;save();msg='已重設';render()}
+function render(){
+ document.getElementById('app').innerHTML={overview:vOverview,debts:vDebts,expenses:vExpenses,settings:vSettings}[tab]();
+ document.getElementById('nav').innerHTML=Object.entries(TABS).map(([k,v])=>`<button class="${k==tab?'on':''}" onclick="go('${k}')">${v}</button>`).join('');
+}
+render();
+</script>
+</body>
+</html>
